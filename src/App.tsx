@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import axiosBase from 'axios';
+
+import { Prefecture, InputCheckEvent } from './types'
 
 import './App.css';
 
@@ -11,8 +13,8 @@ const axios = axiosBase.create({
 })
 
 function App() {
-  const [prefectureList, setPrefectureList] = useState([]);
-  const [selectedPrefectureList, setSelectedPrefectureList] = useState([]);
+  const [prefectureList, setPrefectureList] = useState<Prefecture[]>([]);
+  const [selectedPrefectureList, setSelectedPrefectureList] = useState<Prefecture[]>([]);
 
   useEffect(() => {
     axios.get("/api/v1/prefectures").then(response => {
@@ -20,13 +22,13 @@ function App() {
     });
   }, [])
 
-  const onSelectPrefecture = useCallback((value) => {
+  const onSelectPrefecture = useCallback((event: InputCheckEvent) => {
     const selectedPrefecture = prefectureList.find(pref => {
-      return pref.prefCode === Number(value.target.value)
+      return pref.prefCode === Number(event.target?.value)
     })
     if (!selectedPrefecture) return;
     setSelectedPrefectureList([...selectedPrefectureList, selectedPrefecture])
-  })
+  }, [])
 
   return (
     <div className="App">
@@ -34,8 +36,8 @@ function App() {
         {prefectureList.map(prefecture => {
           return (
             <div className="CheckboxWrapper" key={prefecture.prefCode}>
-              <input id={prefecture.prefCode} type="checkbox" value={prefecture.prefCode} onInput={onSelectPrefecture} />
-              <label htmlFor={prefecture.prefCode}>{prefecture.prefName}</label>
+              <input id={String(prefecture.prefCode)} type="checkbox" value={prefecture.prefCode} onInput={onSelectPrefecture} />
+              <label htmlFor={String(prefecture.prefCode)}>{prefecture.prefName}</label>
             </div>
           )
         })}
