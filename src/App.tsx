@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axiosBase from "axios";
 
-import { Prefecture, InputCheckEvent } from "./types";
+import { Prefecture, InputCheckEvent, Population } from "./types";
 
 import "./App.css";
 
@@ -14,9 +14,11 @@ const axios = axiosBase.create({
 
 function App() {
   const [prefectureList, setPrefectureList] = useState<Prefecture[]>([]);
-  const [selectedPrefectureList, setSelectedPrefectureList] = useState<
-    Prefecture[]
-  >([]);
+  const [selectedPrefCodeList, setSelectedPrefCodeList] = useState<number[]>(
+    []
+  );
+  const [boundaryYear, setBoundaryYear] = useState<number>();
+  const [totalPopulation, setTotalPopulation] = useState<Population[]>([]);
 
   useEffect(() => {
     axios.get("/api/v1/prefectures").then((response) => {
@@ -24,13 +26,63 @@ function App() {
     });
   }, []);
 
-  const onSelectPrefecture = useCallback((event: InputCheckEvent) => {
-    const selectedPrefecture = prefectureList.find((pref) => {
-      return pref.prefCode === Number(event.target?.value);
-    });
-    if (!selectedPrefecture) return;
-    setSelectedPrefectureList([...selectedPrefectureList, selectedPrefecture]);
-  }, []);
+  const getPrefName = (prefCode: number) => {
+    const prefData = prefectureList.find((v) => v.prefCode === prefCode);
+    return prefData == null ? "" : prefData.prefName;
+  };
+
+  const getPopulationData = (prefCode: number) => {
+    axios
+      .get("/api/v1/population/composition/perYear", {
+        params: {
+          prefCode: prefCode,
+          cityCode: "-"
+        }
+      })
+      .then((response) => {
+        if (!boundaryYear) {
+          setBoundaryYear(response.data.result.boundaryYear);
+        }
+        setTotalPopulation([
+          ...totalPopulation,
+          {
+            prefCode: prefCode,
+            prefName: getPrefName(prefCode),
+            data: response.data.result.data[0].data
+          }
+        ]);
+      });
+  };
+
+  const onSelectPrefecture = (event: InputCheckEvent) => {
+    const prefCode = Number(event.target?.value);
+    // 選択済み都道府県コードに含まれているかの確認
+    const prefCodeIndex = selectedPrefCodeList.indexOf(prefCode);
+
+    if (prefCodeIndex > -1) {
+      // 含まれている場合(チェックあり → なし)
+      const newPrefCodeList = selectedPrefCodeList.filter(
+        (v) => v !== prefCode
+      );
+      setSelectedPrefCodeList(newPrefCodeList);
+
+      // グラフデータからデータを削除
+      const totalPopulationIndex = totalPopulation.findIndex(
+        (v) => v.prefCode === prefCode
+      );
+      if (totalPopulationIndex > -1) {
+        const newTotalPopulation = totalPopulation.filter(
+          (v) => v.prefCode !== prefCode
+        );
+        setTotalPopulation(newTotalPopulation);
+      }
+    } else {
+      // 含まれていない場合(チェックなし → あり)
+      setSelectedPrefCodeList([...selectedPrefCodeList, prefCode]);
+      // グラフデータにデータを追加
+      getPopulationData(prefCode);
+    }
+  };
 
   return (
     <div className="App">
