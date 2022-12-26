@@ -138,5 +138,11 @@ export const Graph = ({
 
   const options = useMemo(getOptions, [boundaryYear, totalPopulation]);
 
-  return <HighchartsReact highcharts={Highcharts} options={options} />;
+  return (
+    <HighchartsReact
+      className="Graph"
+      highcharts={Highcharts}
+      options={options}
+    />
+  );
 };

@@ -105,10 +105,14 @@ function App() {
         })}
       </div>
       <div className="GraphArea">
-        <Graph
-          boundaryYear={boundaryYear || 2020}
-          totalPopulation={totalPopulation}
-        />
+        {selectedPrefCodeList.length > 0 ? (
+          <Graph
+            boundaryYear={boundaryYear || 2020}
+            totalPopulation={totalPopulation}
+          />
+        ) : (
+          <div className="GraphEmptyState">都道府県を選択</div>
+        )}
       </div>
     </div>
   );
