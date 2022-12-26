@@ -4,6 +4,7 @@ import axiosBase from "axios";
 import { Prefecture, InputCheckEvent, Population } from "./types";
 
 import "./App.css";
+import { Graph } from "./Graph";
 
 const axios = axiosBase.create({
   baseURL: process.env.REACT_APP_RESAS_API_BASE_URL,
@@ -103,7 +104,9 @@ function App() {
           );
         })}
       </div>
-      <div className="Graph"></div>
+      <div className="GraphArea">
+        <Graph boundaryYear={boundaryYear} totalPopulation={totalPopulation} />
+      </div>
     </div>
   );
 }
