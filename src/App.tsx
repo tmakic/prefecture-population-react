@@ -105,7 +105,10 @@ function App() {
         })}
       </div>
       <div className="GraphArea">
-        <Graph boundaryYear={boundaryYear} totalPopulation={totalPopulation} />
+        <Graph
+          boundaryYear={boundaryYear || 2020}
+          totalPopulation={totalPopulation}
+        />
       </div>
     </div>
   );
